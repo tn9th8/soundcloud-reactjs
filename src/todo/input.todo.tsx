@@ -20,7 +20,7 @@ const InputTodo = (props: TProps) => {
 
     return (
         <div>
-            <h2>I'm {props.name}, {props.meta.gender}, {props.meta.address}</h2>
+            <h2>I'm {props.name}, {props.meta.gender} years old, now is living at {props.meta.address}</h2>
 
             <label >Add a todo item:</label>&nbsp; &nbsp;
             <input

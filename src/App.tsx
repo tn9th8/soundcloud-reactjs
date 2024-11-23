@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import './App.css'
-import reactLogo from './assets/react.svg'
-import InputTodo from './todo/input.todo'
-import viteLogo from '/vite.svg'
+import './App.css';
+import reactLogo from './assets/react.svg';
+import InputTodo from './todo/input.todo';
+import viteLogo from '/vite.svg';
 
 function App() {
   const name = "Pham Bach Chien";
