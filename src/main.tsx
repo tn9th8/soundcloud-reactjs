@@ -7,16 +7,23 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import UserPage from './pages/user.page.tsx';
+import LayoutAdminComponent from './components/index/layout-admin.component.tsx';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <LayoutAdminComponent />,
+    children: [
+      {
+        index: true,
+        element: <App />
+      },
+      {
+        path: "users",
+        element: <UserPage />
+      }
+    ]
   },
-  {
-    path: "/users",
-    element: <UserPage />,
-  }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
