@@ -5,25 +5,24 @@ import './users.scss';
 
 type TProps = {
     accessToken: any;
-    getData: any;
+    reloadList: any;
     isModalOpen: boolean;
     setIsModalOpen: (value: boolean) => void;
 }
 
-const UserModel = (props: TProps) => {
-    const { accessToken, getData, isModalOpen, setIsModalOpen } = props;
+const UserCreateModel = (props: TProps) => {
+    const { accessToken, reloadList, isModalOpen, setIsModalOpen } = props;
+
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('');
-    const [age, setAge] = useState('');
+    const [age, setAge] = useState<number | undefined>(undefined);
     const [gender, setGender] = useState('');
     const [avatar, setAvatar] = useState('');
 
     //modal
-
-
     const create = async (data: any) => {
         const res = await fetch('http://localhost:8044/api/v1/admin/users', {
             headers: {
@@ -39,7 +38,7 @@ const UserModel = (props: TProps) => {
             notification.success({
                 message: 'Created successfully'
             });
-            await getData();
+            await reloadList();
             setIsModalOpen(false);
         } else {
             notification.error({
@@ -51,25 +50,26 @@ const UserModel = (props: TProps) => {
     }
 
     const handleOk = async () => {
-        const data = { name, email, phone, password, role, age, gender, avatar };
+        const data = { name, email, phone, password, role: '672702a9a7b11823367b7206', age, gender, avatar };
         await create(data);
+        handleCancel();
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
         setName('');
         setEmail('');
         setPhone('');
         setPassword('');
         setRole('');
-        setAge('');
+        setAge(undefined);
         setGender('');
         setAvatar('');
     };
 
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
-
     return (
         <Modal
-            title="Add new an user"
+            title="Add an new user"
             open={isModalOpen}
             onOk={handleOk}
             onCancel={handleCancel} maskClosable={false}>
@@ -101,14 +101,14 @@ const UserModel = (props: TProps) => {
                 <div>
                     <label>Role:</label>
                     <Input
-                        value={role}
+                        value={role ? 'NORMAL_CLIENT' : 'NO_ROLE'}
                         onChange={(event) => setRole(event?.target.value)} />
                 </div>
                 <div>
                     <label>Age:</label>
                     <Input
                         value={age}
-                        onChange={(event) => setAge(event?.target.value)} />
+                        onChange={(event) => setAge(+event?.target.value)} />
                 </div>
                 <div>
                     <label>Gender:</label>
@@ -126,4 +126,4 @@ const UserModel = (props: TProps) => {
         </Modal>
     );
 };
-export default UserModel;
+export default UserCreateModel;

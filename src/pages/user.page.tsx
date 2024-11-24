@@ -1,9 +1,9 @@
-import TableComponent from "../components/users/table.component";
+import UsersTable from "../components/users/users.table";
 
 const UserPage = () => {
     return (
         <div>
-            <TableComponent />
+            <UsersTable />
         </div>
     );
 };
