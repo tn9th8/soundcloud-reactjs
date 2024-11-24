@@ -8,17 +8,17 @@ type MenuItem = Required<MenuProps>['items'][number];
 
 const items: MenuItem[] = [
     {
-        label: <Link to={'/'}>home</Link>,
+        label: <Link to={'/'}>Home</Link>,
         key: 'home',
         icon: <HomeOutlined />,
     },
     {
-        label: <Link to={'/users'}>users</Link>,
+        label: <Link to={'/users'}>Users</Link>,
         key: 'users',
         icon: <TeamOutlined />,
     },
     {
-        label: 'tracks',
+        label: 'Tracks',
         key: 'tracks',
         icon: <PlayCircleOutlined />,
         children: [
@@ -44,7 +44,7 @@ const items: MenuItem[] = [
         key: 'alipay',
         label: (
             <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
-                link
+                Link
             </a>
         ),
     },
