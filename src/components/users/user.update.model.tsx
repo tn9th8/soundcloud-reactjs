@@ -4,8 +4,8 @@ import './users.scss';
 import { TCurrentUser } from './users.table';
 
 type TProps = {
-    accessToken: any;
-    reloadList: any;
+    accessToken: string;
+    reloadList: () => void;
     isModalOpen: boolean;
     setIsModalOpen: (value: boolean) => void;
     payload: TCurrentUser | undefined;
@@ -15,7 +15,6 @@ type TProps = {
 const UserUpdateModel = (props: TProps) => {
     const { accessToken, reloadList, isModalOpen, setIsModalOpen, payload, setPayload } = props;
 
-    const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [roles, setRoles] = useState<string[]>([]);
@@ -25,7 +24,6 @@ const UserUpdateModel = (props: TProps) => {
 
     useEffect(() => {
         if (payload != null) {
-            setId((payload as any)._id)
             setName(payload.name);
             setPhone(payload.phone);
             setRoles(payload.roles);
@@ -49,7 +47,7 @@ const UserUpdateModel = (props: TProps) => {
 
         if (jsonRes?.data) {
             notification.success({
-                message: 'Created successfully'
+                message: 'Updated successfully'
             });
             await reloadList();
             setIsModalOpen(false);
@@ -63,7 +61,7 @@ const UserUpdateModel = (props: TProps) => {
     }
 
     const handleOk = async () => {
-        const data = { id, name, phone, roles: ['672702a9a7b11823367b7206'], age, gender, avatar };
+        const data = { id: (payload as any)?._id, name, phone, roles: ['672702a9a7b11823367b7206'], age, gender, avatar };
         await update(data);
         handleCancel();
     };
@@ -71,7 +69,6 @@ const UserUpdateModel = (props: TProps) => {
     const handleCancel = () => {
         setPayload(undefined);
         setIsModalOpen(false);
-        setId('');
         setName('');
         setPhone('');
         setRoles([]);

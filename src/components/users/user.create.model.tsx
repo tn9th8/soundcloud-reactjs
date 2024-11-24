@@ -2,10 +2,11 @@ import { useState } from 'react';
 // import '../../styles/table.css';
 import { Input, Modal, notification } from 'antd';
 import './users.scss';
+import { TUser } from './users.table';
 
 type TProps = {
-    accessToken: any;
-    reloadList: any;
+    accessToken: string;
+    reloadList: () => void;
     isModalOpen: boolean;
     setIsModalOpen: (value: boolean) => void;
 }
@@ -23,7 +24,7 @@ const UserCreateModel = (props: TProps) => {
     const [avatar, setAvatar] = useState('');
 
     //modal
-    const create = async (data: any) => {
+    const create = async (data: TUser) => {
         const res = await fetch('http://localhost:8044/api/v1/admin/users', {
             headers: {
                 'Content-Type': 'application/json',

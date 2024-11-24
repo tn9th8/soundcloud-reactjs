@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 // import '../../styles/table.css';
-import type { TableProps } from 'antd';
-import { Button, Space, Table } from 'antd';
+import { Button, notification, Popconfirm, Space, Table } from 'antd';
+import { ColumnsType } from 'antd/es/table';
 import UserCreateModel from './user.create.model';
-import './users.scss';
 import UserUpdateModel from './user.update.model';
+import './users.scss';
 
 export type TUser = {
     name: string,
@@ -12,7 +12,7 @@ export type TUser = {
     email: string,
     password: string,
     role: string
-    age: number,
+    age: number | undefined,
     gender: string,
     avatar: string,
 };
@@ -27,34 +27,29 @@ export type TCurrentUser = {
     avatar: string,
 };
 
+export type Metadata = {
+    limit: number,
+    page: number,
+    items: number,
+    pages: number
+};
+
 const UsersTable = () => {
+    const accessToken = localStorage.getItem('accessToken') as string;
+
     const [userList, setUserList] = useState([]);
+    const [meta, setMeta] = useState<Metadata>({ limit: 6, page: 1, items: 0, pages: 0 });
+    const [reload, setReload] = useState({ limit: 6, page: 1 });
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<TCurrentUser | undefined>(undefined);
 
-    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjcyNzA2MTk4M2QxNmY0YzI0ZTZhZjc3IiwibmFtZSI6IkknbSBhIHN1cGVyIGFkbWluIiwiZW1haWwiOiJzdXBlckBtZW5zaG9wLmNvbSIsInBob25lIjoiMDAwMDk4OTg5OCIsInJvbGVzIjpbIjY3MjcwMWFhMmY4ZDgwYWEzMmRiYmIyOCIsIjY3MjcwMDI4ODgyNDg5OTIxMzkyYjk3NCJdfSwiaWF0IjoxNzMwNjk1Mzg3LCJleHAiOjEwMzcwNjk1Mzg3fQ.G6TloCCNJdlszPCKVGFEaGeZY2_nmxyiZjQocxr4F4Q';
     useEffect(() => {
-        getData();
-    }, []);
+        getList();
+    }, [reload]);
 
-    // const login = async () => {
-    //     const res = await fetch('http://localhost:8044/api/v1/admin/auth/signin', {
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         method: 'POST',
-    //         body: JSON.stringify({
-    //             username: 'super@menshop.com',
-    //             password: '123456'
-    //         })
-    //     });
-    //     const jsonRes = await res.json();
-    //     return jsonRes;
-    // };
-
-    const getData = async () => {
-        const res = await fetch('http://localhost:8044/api/v1/admin/users/active', {
+    const getList = async () => {
+        const res = await fetch(`http://localhost:8044/api/v1/admin/users/active?page=${meta.page}&limit=${meta.limit}`, {
             headers: {
                 "Content-Type": "application/json",
                 'Authorization': `Bearer ${accessToken}`,
@@ -63,9 +58,34 @@ const UsersTable = () => {
         });
         const jsonRes = await res.json();
         setUserList(jsonRes.data);
+        setMeta(jsonRes.metadata);
     };
 
-    const columns: TableProps<TCurrentUser>['columns'] = [
+    const disable = async (record: TCurrentUser) => {
+        const res = await fetch(`http://localhost:8044/api/v1/admin/users/disable/${(record as any)._id}`, {
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${accessToken}`,
+            },
+            method: 'PATCH',
+        });
+        const jsonRes = await res.json();
+
+        if (jsonRes?.data) {
+            notification.success({
+                message: 'Disable successfully'
+            });
+            await getList();
+        } else {
+            notification.error({
+                message: 'Sorry, an exception occurred',
+                description: jsonRes.message,//JSON.stringify(jsonRes.message)
+            });
+        }
+        return jsonRes;
+    };
+
+    const columns: ColumnsType<TCurrentUser> = [ //TableProps<TCurrentUser>['columns'] = [
         {
             title: 'ID',
             dataIndex: '_id',
@@ -100,33 +120,61 @@ const UsersTable = () => {
                     <Button type="primary" onClick={() => {
                         setCurrentRecord(record);
                         setIsUpdateModalOpen(true);
-                    }}>Edit</Button>
-                    <Button type="primary" danger>Delete</Button>
+                    }}>edit</Button>
+
+                    <Popconfirm
+                        placement="topRight"
+                        title={`Are you sure to disable ${record.name} ?`}
+                        description={'choose confirm button to disable'}
+                        okText="Yes"
+                        cancelText="No"
+                        onConfirm={() => disable(record)}
+                    >
+                        <Button type="primary" danger>disable</Button>
+                    </Popconfirm>
                 </Space >
             ),
         },
     ];
 
+    const gotoPage = (page: number, pageSize: number) => {
+        setMeta({ ...meta, page, limit: pageSize });
+        setReload({ page, limit: pageSize });
+    };
+
     return (
         <div>
             <div className='table-name'>
                 <h2>User Table</h2>
-                <Button type="primary" size='large'
-                    onClick={() => setIsCreateModalOpen(true)}>Add new</Button>
+                <Button type="primary"
+                    onClick={() => setIsCreateModalOpen(true)}>add new</Button>
             </div>
 
-            <Table<TCurrentUser> columns={columns} dataSource={userList} rowKey={'_id'} />
+            <Table<TCurrentUser>
+                columns={columns}
+                dataSource={userList}
+                rowKey={'_id'}
+                pagination={{
+                    current: meta.page,
+                    pageSize: meta.limit,
+                    total: meta.items,
+                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+                    onChange: gotoPage,
+                    showSizeChanger: true,
+                    pageSizeOptions: ['6', '14', '26'],
+                }}
+            />
 
             <UserCreateModel
                 accessToken={accessToken}
-                reloadList={getData}
+                reloadList={getList}
                 isModalOpen={isCreateModalOpen}
                 setIsModalOpen={setIsCreateModalOpen}
             />
 
             <UserUpdateModel
                 accessToken={accessToken}
-                reloadList={getData}
+                reloadList={getList}
                 isModalOpen={isUpdateModalOpen}
                 setIsModalOpen={setIsUpdateModalOpen}
                 payload={currentRecord}

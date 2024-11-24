@@ -1,7 +1,7 @@
 import { HomeOutlined, PlayCircleOutlined, TeamOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Menu } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet } from "react-router-dom";
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -51,6 +51,28 @@ const items: MenuItem[] = [
 ];
 
 const LayoutAdminComponent = () => {
+    const login = async () => {
+        const res = await fetch('http://localhost:8044/api/v1/admin/auth/signin', {
+            headers: {
+                "Content-Type": "application/json"
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                username: 'super@menshop.com',
+                password: '123456'
+            })
+        });
+        const jsonRes = await res.json();
+        if (jsonRes?.data) {
+            localStorage.setItem('accessToken', jsonRes.data.accessToken);
+        }
+        return jsonRes;
+    };
+
+    useEffect(() => {
+        login();
+    }, []);
+
     const [current, setCurrent] = useState('mail');
 
     const onClick: MenuProps['onClick'] = (e) => {
